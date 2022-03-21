@@ -1,7 +1,7 @@
 <script lang="ts">
+import { sendImage } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
 
-import axios from "axios";
 import p5 from "p5";
 
 export default defineComponent({
@@ -16,39 +16,27 @@ export default defineComponent({
     }
   },
   methods: {
-    // drawCanvas(event: any) {
-    //   const rect = event.target.getBoundingClientRect();
-    //   let x = event.clientX - rect.left;
-    //   let y = event.clientY - rect.top;
-
-    //   this.ctx?.fillRect(x, y, 10, 10);
-
-    // },
     clearCanvas() {
-      // this.ctx?.clearRect(0, 0, 300, 150)
       this.p?.clear(0, 0, 0, 0);
     },
-    sendImage() {
+    send() {
       this.feedback = "";
-      axios.post('/api/image/new',
-        {
-          base64: this.canvas?.toDataURL()
-        })
-        .catch(error => {
-          console.log(error);
-          this.feedback = "ERROR";
-        })
+      const dataUrl = this.canvas?.toDataURL("image/png");
+      
+      if (!dataUrl) return;
+      sendImage(dataUrl)
         .then(response => {
           console.log(response);
           this.clearCanvas();
           this.feedback = "succesfully send!"
         })
-
+        .catch(error => {
+          console.log(error);
+          this.feedback = "ERROR";
+        })
     }
   },
   mounted() {
-    // this.canvas = this.$refs.canvas as HTMLCanvasElement;
-    // this.ctx = this.canvas?.getContext("2d");
     const sketch = (p: p5) => {
       p.setup = () => {
         const renderer = p.createCanvas(400, 400);
@@ -81,7 +69,7 @@ export default defineComponent({
     <h1>This is the draw page</h1>
     <button
       class="px-16 py-8 border rounded-xl shadow bg-blue-500 text-white font-bold text-2xl"
-      @click="sendImage"
+      @click="send"
     >Send</button>
     <p>{{ feedback }}</p>
   </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
+import { getAllImages } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
-import axios from "axios";
 import { io, Socket } from "socket.io-client";
 
 export default defineComponent({
@@ -29,10 +29,10 @@ export default defineComponent({
             this.images.push(data);
         });
 
-        axios.get('/api/image/all').then(response => {
-            console.log(response.data);
-            this.images = response.data;
-        })
+        getAllImages()
+            .then(images => {
+                this.images = images;
+            })
     }
 })
 
