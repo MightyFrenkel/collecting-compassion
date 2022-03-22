@@ -10,6 +10,9 @@ export class PgService {
     public async addImageToDb(image: Image) {
         const client = new Client({
             connectionString: process.env.DATABASE_URL,
+            ssl: {
+                rejectUnauthorized: false
+            }
         });
         client.connect();
         const values = [image.id, image.url]
@@ -26,6 +29,9 @@ export class PgService {
     public async getAllImages() {
         const client = new Client({
             connectionString: process.env.DATABASE_URL,
+            ssl: {
+                rejectUnauthorized: false
+            }
         });
         client.connect();
 
@@ -43,6 +49,6 @@ export class PgService {
         finally {
             client.end();
         }
-        
+
     }
 }
