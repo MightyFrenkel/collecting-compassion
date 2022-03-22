@@ -3,7 +3,6 @@ import { Image } from 'src/models/image';
 const { Client } = require('pg');
 
 
-
 @Injectable()
 export class PgService {
 

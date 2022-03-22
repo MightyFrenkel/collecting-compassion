@@ -37,13 +37,15 @@ export default defineComponent({
     }
   },
   mounted() {
+    if (this.p) return;
     const sketch = (p: p5) => {
       p.setup = () => {
-        const renderer = p.createCanvas(400, 400);
+        const renderer = p.createCanvas(480, 480);
         p.background('#FFF');
         this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
+        
         this.ctx = this.canvas?.getContext("2d");
-        p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+        //p.resizeCanvas(window.innerWidth, window.innerHeight, true);
       };
 
       p.draw = () => {
@@ -53,13 +55,13 @@ export default defineComponent({
           p.line(p.mouseX, p.mouseY, p.pmouseX, p.pmouseY,);
         }
       };
-      p.windowResized = () => {
-        console.log("resize");
-        p.resizeCanvas(window.innerWidth, window.innerHeight, true);
-      }
+      // p.windowResized = () => {
+      //   console.log("resize");
+      //   p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+      // }
     };
     
-    this.p = new p5(sketch);
+    this.p = new p5(sketch, this.$refs.p5container as HTMLElement);
   },
 })
 </script>
@@ -72,6 +74,9 @@ export default defineComponent({
       @click="send"
     >Send</button>
     <p>{{ feedback }}</p>
+    <div ref="p5container">
+
+    </div>
   </div>
 </template>
 
