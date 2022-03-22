@@ -7,11 +7,9 @@ import { pool } from "./pool";
 export class PgService {
 
     public async addImageToDb(image: Image) {
-        pool.connect();
         const values = [image.id, image.url]
         try {
             await pool.query('INSERT INTO images (id, url) VALUES ($1, $2)', values);
-            pool.end();
         }
         catch (error) {
             console.log(error);
@@ -20,8 +18,6 @@ export class PgService {
     }
 
     public async getAllImages() {
-        pool.connect();
-
         try {
             const res = await pool.query('SELECT id, url FROM images WHERE visible = true');
             for (let row of res.rows) {
@@ -32,9 +28,6 @@ export class PgService {
         catch (error) {
             console.log(error);
             throw error;
-        }
-        finally {
-            pool.end();
         }
 
     }

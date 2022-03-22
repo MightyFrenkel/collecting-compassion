@@ -13,8 +13,9 @@ export class ImageService {
     public async addImage(image: Image) {
         this.images.push(image);
         const id = await this.s3Service.uploadImage(image);
-        await this.pgSerivce.addImageToDb({ id: id, url: 'https://support-ukraine.s3.eu-west-3.amazonaws.com/' + id } as Image);
-        this.eventGateway.sendImage(image);
+        const newImg = { id: id, url: 'https://support-ukraine.s3.eu-west-3.amazonaws.com/' + id } as Image;
+        await this.pgSerivce.addImageToDb(newImg);
+        this.eventGateway.sendImage(newImg);
     }
 
     public async getAllImages() {

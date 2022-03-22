@@ -18,6 +18,11 @@ const router = createRouter({
       path: '/total',
       name: 'total',
       component: () => import('../views/TotalView.vue')
+    },
+    {
+      path: '/latest',
+      name: 'latest',
+      component: () => import('../views/LatestView.vue')
     }
   ]
 })

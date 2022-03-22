@@ -1,6 +1,8 @@
+import type p5 from "p5";
 <script lang="ts">
 import { getAllImages } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
+import p5 from "p5";
 import { io, Socket } from "socket.io-client";
 
 export default defineComponent({
@@ -8,10 +10,13 @@ export default defineComponent({
         return {
             images: [] as any[],
             socket: null as null | Socket,
-            status: "disconnected"
+            status: "disconnected",
+            canvas: null as HTMLCanvasElement | null,
+            ctx: null as CanvasRenderingContext2D | null,
+            p: null as p5 | null
         }
     },
-    mounted() {
+    async mounted() {
         this.socket = io();
 
         this.socket.on("connect", () => {
@@ -24,15 +29,49 @@ export default defineComponent({
             this.status = "disconnected";
         });
 
-        this.socket.on("events", (data: any) => {
+        this.images = await getAllImages();
+
+        let loadedImages: p5.Image[] = [];
+
+        this.socket.on("newimage", (data: any) => {
             console.log(data);
             this.images.push(data);
+            if (this.p) 
+                loadedImages.push(this.p?.loadImage(data.url));
         });
 
-        getAllImages()
-            .then(images => {
-                this.images = images;
-            })
+        let h = 0;
+
+        const sketch = (p: p5) => {
+            p.setup = () => {
+                const renderer = p.createCanvas(480, 480);
+                p.background('black');
+                this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
+
+                this.ctx = this.canvas?.getContext("2d");
+                p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+                for (let i = 0; i < this.images.length; i++) {
+                    loadedImages.push(p.loadImage(this.images[i].url));
+                }
+                h = p.height / 2;
+            };
+
+            p.draw = () => {
+                p.background(0);
+                for (let i = 0; i < loadedImages.length; i++) {
+                    const img = loadedImages[i];
+                    h = h - 0.5;
+                    if (h < 0)
+                        h = p.height;
+                    p.image(img, h, 0);
+                }
+            };
+            p.windowResized = () => {
+                p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+            }
+        };
+
+        this.p = new p5(sketch, this.$refs.p5container as HTMLElement);
     }
 })
 
@@ -40,10 +79,11 @@ export default defineComponent({
 
 <template>
     <div>
-        <h1>This is the total view</h1>
-        <p>Connection status: {{ status }}</p>
-        <div v-for="(image, index) in images" :key="index">
-            <img :src="image.url" />
+        <div class="fixed">
+            <h1>This is the total view</h1>
+            <p>Connection status: {{ status }}</p>
         </div>
+
+        <div ref="p5container"></div>
     </div>
 </template>

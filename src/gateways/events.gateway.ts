@@ -8,15 +8,7 @@ export class EventsGateway {
 @WebSocketServer()
 server: Server;
 
-  @SubscribeMessage('events')
-  handleMessage(client: any, payload: any): string {
-    console.log(client.id);
-    this.sendImage(payload);
-    
-    return 'Hello world!';
-  }
-
   public sendImage(data: Image) {
-    this.server.emit("events", data);
+    this.server.emit("newimage", data);
   }
 }
