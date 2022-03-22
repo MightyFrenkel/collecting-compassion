@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { Image } from 'src/models/image';
 import settings from "./aws";
@@ -16,23 +16,17 @@ export class S3Service {
             Bucket: settings.AWS_BUCKET_NAME,
             Key: uuid,
             Body: Buffer.from(image.base64.replace(/^data:.+;base64,/, ""), 'base64'),
+            ACL: "public-read",
             ContentType: "image/png"
         };
         try {
             const data = await s3Client.send(new PutObjectCommand(params))
             console.log("succes!", data);
-            return data;
+            return uuid;
         }
         catch (error) {
             console.log(error);
             throw error;
         }
     }
-
-    getImage(key: string) {
-        GetObjectCommand
-    }
-
-
-
 }

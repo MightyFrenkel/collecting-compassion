@@ -1,3 +1,5 @@
 export class Image {
-    base64: string
+    id?: string
+    url?: string
+    base64?: string
 }

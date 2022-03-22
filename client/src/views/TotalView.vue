@@ -43,7 +43,7 @@ export default defineComponent({
         <h1>This is the total view</h1>
         <p>Connection status: {{ status }}</p>
         <div v-for="(image, index) in images" :key="index">
-            <img :src="image.base64" />
+            <img :src="image.url" />
         </div>
     </div>
 </template>
