@@ -6,6 +6,7 @@ import { join } from 'path';
 import { EventsGateway } from './gateways/events.gateway';
 import { ImageService } from './services/image/image.service';
 import { ImageController } from './controllers/image/image.controller';
+import { S3Service } from './services/s3/s3.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { ImageController } from './controllers/image/image.controller';
     }),
   ],
   controllers: [AppController, ImageController],
-  providers: [AppService, EventsGateway, ImageService],
+  providers: [AppService, EventsGateway, ImageService, S3Service],
 })
 export class AppModule {}

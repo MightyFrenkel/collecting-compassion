@@ -13,9 +13,9 @@ export class ImageController {
     }
 
     @Post('new')
-    uploadImage(@Body() image: Image) {
+    async uploadImage(@Body() image: Image) {
         console.log(image);
-        this.imageService.addImage(image);
+        await this.imageService.addImage(image);
         this.eventGateway.sendImage(image);
         return 'succes!';
     }
