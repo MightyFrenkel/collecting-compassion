@@ -1,3 +1,4 @@
+import type { Drawing } from "@/models/drawing";
 import type p5 from "p5";
 <script lang="ts">
 import { getAllImages } from "@/services/modules/ImageService";
@@ -5,6 +6,7 @@ import { defineComponent } from "@vue/runtime-core";
 import p5 from "p5";
 import { io, Socket } from "socket.io-client";
 import type { Image } from "@/models/image";
+import { Drawing } from "@/models/drawing";
 
 export default defineComponent({
     data() {
@@ -21,7 +23,7 @@ export default defineComponent({
     async mounted() {
         this.socket = io();
         this.filter = this.$route.params.filter as string;
-        
+
         this.socket.on("connect", () => {
             console.log("connected", this.socket?.id);
             this.status = "connected";
@@ -34,18 +36,29 @@ export default defineComponent({
 
         this.images = await getAllImages(this.filter);
 
-        let loadedImages: p5.Image[] = [];
+        let loadedImages: Drawing[] = [];
 
         this.socket.on("newimage", (data: Image) => {
-            
+
             if (this.filter.length > 0 && data.color !== this.filter) return;
             console.log(data);
             this.images.push(data);
-            if (this.p && data.base64) 
-                loadedImages.push(this.p?.loadImage(data.base64));
+            if (this.p && data.base64) {
+                const image = this.p?.loadImage(data.base64);
+                const drawing = new Drawing();
+                drawing.image = image;
+                loadedImages.push(drawing);
+            }
         });
 
-        let h = 0;
+        const grid = [
+            { x: 0.25, y: 0.25, },
+            { x: 0.50, y: 0.25, },
+            { x: 0.75, y: 0.25, },
+            { x: 0.25, y: 0.75, },
+            { x: 0.50, y: 0.75, },
+            { x: 0.75, y: 0.75, }
+        ]
 
         const sketch = (p: p5) => {
             p.setup = () => {
@@ -56,20 +69,29 @@ export default defineComponent({
 
                 this.ctx = this.canvas?.getContext("2d");
                 p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+
+                let gridSpot = 0;
                 for (let i = 0; i < this.images.length; i++) {
-                    loadedImages.push(p.loadImage(this.images[i].url));
+                    const image = p.loadImage(this.images[i].url);
+                    const drawing = new Drawing();
+                    drawing.image = image;
+                    drawing.startPos = grid[gridSpot];
+                    drawing.currentPos = drawing.startPos;
+                    gridSpot++;
+                    if (gridSpot > grid.length)
+                        gridSpot = 0;
+                    loadedImages.push(drawing);
                 }
-                h = p.height / 2;
+
             };
 
             p.draw = () => {
                 p.background(0);
                 for (let i = 0; i < loadedImages.length; i++) {
                     const img = loadedImages[i];
-                    h = h - 0.05;
-                    if (h < 0)
-                        h = p.height;
-                    p.image(img, h, 0);
+                    if (!img.image) continue;
+                    const size = p.width / 5;
+                    p.image(img.image, p.width * img.startPos.x - size / 2, p.height * img.startPos.y - size / 2, size, size);
                 }
             };
             p.windowResized = () => {
