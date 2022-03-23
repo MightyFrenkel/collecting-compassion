@@ -22,7 +22,10 @@ export class S3Service {
         try {
             const data = await s3Client.send(new PutObjectCommand(params))
             console.log("succes!", data);
-            return uuid;
+            image.id = uuid;
+            image.url = 'https://support-ukraine.s3.eu-west-3.amazonaws.com/' + uuid;
+            
+            return image;
         }
         catch (error) {
             console.log(error);

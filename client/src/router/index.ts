@@ -15,7 +15,7 @@ const router = createRouter({
       component: () => import('../views/DrawView.vue')
     },
     {
-      path: '/total',
+      path: '/total/:filter?',
       name: 'total',
       component: () => import('../views/TotalView.vue')
     },

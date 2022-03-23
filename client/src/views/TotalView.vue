@@ -4,6 +4,7 @@ import { getAllImages } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
 import p5 from "p5";
 import { io, Socket } from "socket.io-client";
+import type { Image } from "@/models/image";
 
 export default defineComponent({
     data() {
@@ -13,12 +14,14 @@ export default defineComponent({
             status: "disconnected",
             canvas: null as HTMLCanvasElement | null,
             ctx: null as CanvasRenderingContext2D | null,
-            p: null as p5 | null
+            p: null as p5 | null,
+            filter: ""
         }
     },
     async mounted() {
         this.socket = io();
-
+        this.filter = this.$route.params.filter as string;
+        
         this.socket.on("connect", () => {
             console.log("connected", this.socket?.id);
             this.status = "connected";
@@ -29,15 +32,17 @@ export default defineComponent({
             this.status = "disconnected";
         });
 
-        this.images = await getAllImages();
+        this.images = await getAllImages(this.filter);
 
         let loadedImages: p5.Image[] = [];
 
-        this.socket.on("newimage", (data: any) => {
+        this.socket.on("newimage", (data: Image) => {
+            
+            if (this.filter.length > 0 && data.color !== this.filter) return;
             console.log(data);
             this.images.push(data);
-            if (this.p) 
-                loadedImages.push(this.p?.loadImage(data.url));
+            if (this.p && data.base64) 
+                loadedImages.push(this.p?.loadImage(data.base64));
         });
 
         let h = 0;
@@ -46,6 +51,7 @@ export default defineComponent({
             p.setup = () => {
                 const renderer = p.createCanvas(480, 480);
                 p.background('black');
+                p.frameRate(10);
                 this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
 
                 this.ctx = this.canvas?.getContext("2d");
@@ -60,7 +66,7 @@ export default defineComponent({
                 p.background(0);
                 for (let i = 0; i < loadedImages.length; i++) {
                     const img = loadedImages[i];
-                    h = h - 0.5;
+                    h = h - 0.05;
                     if (h < 0)
                         h = p.height;
                     p.image(img, h, 0);

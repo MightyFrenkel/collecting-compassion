@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { EventsGateway } from 'src/gateways/events.gateway';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Image } from 'src/models/image';
 import { ImageService } from 'src/services/image/image.service';
 
@@ -7,9 +6,9 @@ import { ImageService } from 'src/services/image/image.service';
 export class ImageController {
     constructor(private readonly imageService: ImageService) {}
 
-    @Get('all')
-    async getAllImages() {
-        return await this.imageService.getAllImages();
+    @Get('all/:filter?')
+    async getAllImages(@Param() params) {
+        return await this.imageService.getAllImages(params.filter);
     }
 
     @Post('new')

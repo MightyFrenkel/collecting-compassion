@@ -1,9 +1,11 @@
 import axios from "axios";
+import type { Image } from "@/models/image";
 
-export const sendImage = (base64: string) => {
+export const sendImage = (image: Image) => {
     return axios.post('/api/image/new',
         {
-            base64: base64
+            base64: image.base64,
+            color: image.color
         })
         .then(response => {
             console.log(response);
@@ -15,8 +17,8 @@ export const sendImage = (base64: string) => {
         })
 }
 
-export const getAllImages = () => {
-    return axios.get('/api/image/all')
+export const getAllImages = (colorFilter: string = "") => {
+    return axios.get('/api/image/all' + (colorFilter ? '/' + colorFilter : ''))
     .then(response => {
         return Promise.resolve(response.data);
     })

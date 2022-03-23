@@ -1,6 +1,6 @@
-export class Image {
+export interface Image {
     id?: string
     url?: string
     base64?: string
-    color?: string
+    color: string
 }

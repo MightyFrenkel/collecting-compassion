@@ -7,9 +7,9 @@ import { pool } from "./pool";
 export class PgService {
 
     public async addImageToDb(image: Image) {
-        const values = [image.id, image.url]
+        const values = [image.id, image.url, image.color]
         try {
-            await pool.query('INSERT INTO images (id, url) VALUES ($1, $2)', values);
+            await pool.query('INSERT INTO images (id, url, color) VALUES ($1, $2, $3)', values);
         }
         catch (error) {
             console.log(error);
@@ -17,9 +17,12 @@ export class PgService {
         }
     }
 
-    public async getAllImages() {
+    public async getAllImages(filterColor: string) {
         try {
-            const res = await pool.query('SELECT id, url FROM images WHERE visible = true');
+            const query = 'SELECT id, url, color FROM images WHERE visible = true' + (filterColor ? ' and color = $1' : '');
+            const values = [];
+            if (filterColor) values.push(filterColor);
+            const res = await pool.query(query, values);
             for (let row of res.rows) {
                 console.log(JSON.stringify(row));
             };
