@@ -7,12 +7,10 @@ import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class ImageService {
-    private images: Image[] = [];
 
     constructor(private readonly s3Service: S3Service, private readonly pgSerivce: PgService, private readonly eventGateway: EventsGateway, private readonly telegramService: TelegramService) { }
 
     public async addImage(image: Image) {
-        this.images.push(image);
         const newImg = await this.s3Service.uploadImage(image);
         
         await this.pgSerivce.addImageToDb(newImg);
