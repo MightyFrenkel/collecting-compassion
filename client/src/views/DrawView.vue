@@ -14,30 +14,40 @@ export default defineComponent({
       ctx: null as CanvasRenderingContext2D | null,
       feedback: "",
       p: null as p5 | null,
-      color: 'blue'
+      color: 'blue',
+      empty: true
     }
   },
   methods: {
     clearCanvas() {
       this.p?.clear(0, 0, 0, 0);
+      this.empty = true;
     },
     send() {
       this.feedback = "";
+      try {
+        const img = this.createImage();
 
-      const img = this.createImage();
-
-      sendImage(img)
-        .then(response => {
-          console.log(response);
-          this.clearCanvas();
-          this.feedback = "succesfully send!"
-        })
-        .catch(error => {
-          console.log(error);
-          this.feedback = "ERROR";
-        })
+        sendImage(img)
+          .then(response => {
+            console.log(response);
+            this.clearCanvas();
+            this.feedback = "succesfully send!"
+          })
+          .catch(error => {
+            console.log(error);
+            this.feedback = "ERROR";
+          })
+      }
+      catch (error) {
+        console.log(error);
+      }
     },
     createImage(): Image {
+      console.log(this.empty);
+      if (this.empty) {
+        throw Error("Drawing is empty, can not send");
+      }
       const dataUrl = this.canvas?.toDataURL("image/png");
       return {
         base64: dataUrl,
@@ -46,23 +56,22 @@ export default defineComponent({
     }
   },
   mounted() {
-    // if (this.p) return;
     const sketch = (p: p5) => {
       p.setup = () => {
         const renderer = p.createCanvas(480, 480);
         renderer.class("border border-white");
         this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
-        
 
         this.ctx = this.canvas?.getContext("2d");
       };
 
       p.touchMoved = () => {
         p.stroke(this.color);
-        p.strokeWeight(5);
+        p.strokeWeight(10);
 
         if (p.mouseIsPressed === true) {
           p.line(p.mouseX, p.mouseY, p.pmouseX, p.pmouseY,);
+          this.empty = false;
         }
         return false;
       };
@@ -80,6 +89,10 @@ export default defineComponent({
       class="px-16 py-8 border rounded-xl shadow bg-blue-500 text-white font-bold text-2xl"
       @click="send"
     >Send</button>
+    <button
+      class="px-16 py-8 border rounded-xl shadow bg-red-500 text-white font-bold text-2xl"
+      @click="clearCanvas"
+    >Clear</button>
     <br />
     <input type="radio" id="yellow" name="color" value="yellow" v-model="color" />
     <label for="yellow">Yellow</label>
