@@ -4,7 +4,6 @@ import { sendImage } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
 
 import p5 from "p5";
-import { render } from "vue";
 
 export default defineComponent({
   data() {
@@ -58,13 +57,14 @@ export default defineComponent({
         this.ctx = this.canvas?.getContext("2d");
       };
 
-      p.draw = () => {
+      p.touchMoved = () => {
         p.stroke(this.color);
         p.strokeWeight(5);
 
         if (p.mouseIsPressed === true) {
           p.line(p.mouseX, p.mouseY, p.pmouseX, p.pmouseY,);
         }
+        return false;
       };
     };
 
