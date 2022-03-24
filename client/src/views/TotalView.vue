@@ -19,7 +19,8 @@ export default defineComponent({
             canvas: null as HTMLCanvasElement | null,
             ctx: null as CanvasRenderingContext2D | null,
             p: null as p5 | null,
-            filter: ""
+            filter: "",
+            currentGridSpot: 0
         }
     },
     methods: {
@@ -44,7 +45,7 @@ export default defineComponent({
             });
             return socket;
         },
-        animateDrawing(drawing: Drawing) {
+        animateDrawing(drawing: Drawing, sizePercentage: number = 1) {
             const moveSpeed = 0.001;
             const moveAreaPercentage = 0.1;
             if (!this.p) return;
@@ -54,7 +55,7 @@ export default defineComponent({
                     y: drawing.startPos.y + + this.p.random(-moveAreaPercentage, moveAreaPercentage)
                 }
             }
-            const size = this.p.width / 5;
+            const size = this.p.width / 5 * sizePercentage;
             const offset = size / 2;
             const img = drawing.image;
             const normDir = drawing.normDirection();
@@ -64,7 +65,7 @@ export default defineComponent({
             }
             if (img)
                 this.p.image(img, this.p.width * drawing.currentPos.x - offset, this.p.height * drawing.currentPos.y - offset, size, size);
-        }
+        },
     },
     async mounted() {
 
@@ -72,6 +73,7 @@ export default defineComponent({
         this.socket = this.setupSocket();
 
         this.images = await getAllImages(this.filter);
+        console.log(this.images);
 
         let loadedDrawings: Drawing[] = [];
 
@@ -90,10 +92,11 @@ export default defineComponent({
             console.log(data);
             this.images.push(data);
             if (this.p && data.base64) {
-                const image = this.p?.loadImage(data.base64);
-                const drawing = new Drawing(grid[0], image);
-                drawing.image = image;
-                loadedDrawings.push(drawing);
+                const drawing = this.createDrawing(data.base64, grid[this.currentGridSpot]);
+                    this.currentGridSpot++;
+                    if (this.currentGridSpot >= grid.length)
+                        this.currentGridSpot = 0;
+                    loadedDrawings.push(drawing);
             }
         });
 
@@ -108,12 +111,16 @@ export default defineComponent({
                 this.ctx = this.canvas?.getContext("2d");
                 p.resizeCanvas(window.innerWidth, window.innerHeight, true);
 
-                let gridSpot = 0;
+                
                 for (let i = 0; i < this.images.length; i++) {
-                    const drawing = this.createDrawing(this.images[i].url, grid[gridSpot]);
-                    gridSpot++;
-                    if (gridSpot >= grid.length)
-                        gridSpot = 0;
+                    const randomPos: Vector2 = {
+                        x: p.random(0.1, 0.9),
+                        y: p.random(0.1, 0.9)
+                    }
+                    const drawing = this.createDrawing(this.images[i].url, randomPos);
+                    this.currentGridSpot++;
+                    if (this.currentGridSpot >= grid.length)
+                        this.currentGridSpot = 0;
                     loadedDrawings.push(drawing);
                 }
             };
@@ -121,8 +128,10 @@ export default defineComponent({
             p.draw = () => {
                 p.background(0);
                 for (let i = 0; i < loadedDrawings.length; i++) {
-                    const drawing = loadedDrawings[i];                    
-                    this.animateDrawing(drawing); 
+                    const drawing = loadedDrawings[i];     
+                    // const size =  (i / 2) / loadedDrawings.length * 2;
+                    
+                    this.animateDrawing(drawing);
                 }
             };
             p.windowResized = () => {

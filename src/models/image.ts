@@ -3,4 +3,5 @@ export class Image {
     url?: string
     base64?: string
     color?: string
+    data?: string
 }

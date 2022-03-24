@@ -19,7 +19,7 @@ export class PgService {
 
     public async getAllImages(filterColor: string) {
         try {
-            const query = 'SELECT id, url, color FROM images WHERE visible = true' + (filterColor ? ' and color = $1' : '');
+            const query = 'SELECT id, url, color, date FROM images WHERE visible = true' + (filterColor ? ' and color = $1' : '') + ' order by date asc';
             const values = [];
             if (filterColor) values.push(filterColor);
             const res = await pool.query(query, values);

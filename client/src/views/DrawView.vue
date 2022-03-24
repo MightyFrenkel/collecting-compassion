@@ -66,7 +66,13 @@ export default defineComponent({
       };
 
       p.touchMoved = () => {
-        p.stroke(this.color);
+        if (this.color == 'blue') {
+          p.stroke(0, 170, 255)
+        }
+        else {
+          p.stroke(246, 255, 0)
+        }
+        
         p.strokeWeight(10);
 
         if (p.mouseIsPressed === true) {
