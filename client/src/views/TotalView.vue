@@ -1,3 +1,4 @@
+import type { Vector2 } from "@/models/vector2";
 import type { Drawing } from "@/models/drawing";
 import type p5 from "p5";
 <script lang="ts">
@@ -7,11 +8,12 @@ import p5 from "p5";
 import { io, Socket } from "socket.io-client";
 import type { Image } from "@/models/image";
 import { Drawing } from "@/models/drawing";
+import type { Vector2 } from "@/models/vector2";
 
 export default defineComponent({
     data() {
         return {
-            images: [] as any[],
+            images: [] as Image[],
             socket: null as null | Socket,
             status: "disconnected",
             canvas: null as HTMLCanvasElement | null,
@@ -20,38 +22,60 @@ export default defineComponent({
             filter: ""
         }
     },
+    methods: {
+        createDrawing(imgUrl: string | undefined, startPos: Vector2): Drawing {
+            if (!this.p || !imgUrl) {
+                throw Error("Can not create drawing");
+            };
+            const image = this.p?.loadImage(imgUrl);
+            const drawing = new Drawing(startPos, image);
+            return drawing;
+        },
+        setupSocket() {
+            const socket = io();
+            socket.on("connect", () => {
+                console.log("connected", this.socket?.id);
+                this.status = "connected";
+            });
+
+            socket.on("disconnect", () => {
+                console.log("disconnected", this.socket?.id); // undefined
+                this.status = "disconnected";
+            });
+            return socket;
+        },
+        animateDrawing(drawing: Drawing) {
+            const moveSpeed = 0.001;
+            const moveAreaPercentage = 0.1;
+            if (!this.p) return;
+            if (drawing.distance() < 0.01) {
+                drawing.targetPos = {
+                    x: drawing.startPos.x + this.p.random(-moveAreaPercentage, moveAreaPercentage),
+                    y: drawing.startPos.y + + this.p.random(-moveAreaPercentage, moveAreaPercentage)
+                }
+            }
+            const size = this.p.width / 5;
+            const offset = size / 2;
+            const img = drawing.image;
+            const normDir = drawing.normDirection();
+            drawing.currentPos = {
+                x: drawing.currentPos.x + normDir.x * moveSpeed,
+                y: drawing.currentPos.y + normDir.y * moveSpeed
+            }
+            if (img)
+                this.p.image(img, this.p.width * drawing.currentPos.x - offset, this.p.height * drawing.currentPos.y - offset, size, size);
+        }
+    },
     async mounted() {
-        this.socket = io();
+
         this.filter = this.$route.params.filter as string;
-
-        this.socket.on("connect", () => {
-            console.log("connected", this.socket?.id);
-            this.status = "connected";
-        });
-
-        this.socket.on("disconnect", () => {
-            console.log("disconnected", this.socket?.id); // undefined
-            this.status = "disconnected";
-        });
+        this.socket = this.setupSocket();
 
         this.images = await getAllImages(this.filter);
 
-        let loadedImages: Drawing[] = [];
+        let loadedDrawings: Drawing[] = [];
 
-        this.socket.on("newimage", (data: Image) => {
-
-            if (this.filter.length > 0 && data.color !== this.filter) return;
-            console.log(data);
-            this.images.push(data);
-            if (this.p && data.base64) {
-                const image = this.p?.loadImage(data.base64);
-                const drawing = new Drawing();
-                drawing.image = image;
-                loadedImages.push(drawing);
-            }
-        });
-
-        const grid = [
+        const grid: Vector2[] = [
             { x: 0.25, y: 0.25, },
             { x: 0.50, y: 0.25, },
             { x: 0.75, y: 0.25, },
@@ -60,8 +84,22 @@ export default defineComponent({
             { x: 0.75, y: 0.75, }
         ]
 
+        this.socket.on("newimage", (data: Image) => {
+
+            if (this.filter.length > 0 && data.color !== this.filter) return;
+            console.log(data);
+            this.images.push(data);
+            if (this.p && data.base64) {
+                const image = this.p?.loadImage(data.base64);
+                const drawing = new Drawing(grid[0], image);
+                drawing.image = image;
+                loadedDrawings.push(drawing);
+            }
+        });
+
         const sketch = (p: p5) => {
             p.setup = () => {
+                this.p = p;
                 const renderer = p.createCanvas(480, 480);
                 p.background('black');
                 p.frameRate(10);
@@ -72,30 +110,23 @@ export default defineComponent({
 
                 let gridSpot = 0;
                 for (let i = 0; i < this.images.length; i++) {
-                    const image = p.loadImage(this.images[i].url);
-                    const drawing = new Drawing();
-                    drawing.image = image;
-                    drawing.startPos = grid[gridSpot];
-                    drawing.currentPos = drawing.startPos;
+                    const drawing = this.createDrawing(this.images[i].url, grid[gridSpot]);
                     gridSpot++;
-                    if (gridSpot > grid.length)
+                    if (gridSpot >= grid.length)
                         gridSpot = 0;
-                    loadedImages.push(drawing);
+                    loadedDrawings.push(drawing);
                 }
-
             };
 
             p.draw = () => {
                 p.background(0);
-                for (let i = 0; i < loadedImages.length; i++) {
-                    const img = loadedImages[i];
-                    if (!img.image) continue;
-                    const size = p.width / 5;
-                    p.image(img.image, p.width * img.startPos.x - size / 2, p.height * img.startPos.y - size / 2, size, size);
+                for (let i = 0; i < loadedDrawings.length; i++) {
+                    const drawing = loadedDrawings[i];                    
+                    this.animateDrawing(drawing); 
                 }
             };
             p.windowResized = () => {
-                p.resizeCanvas(window.innerWidth, window.innerHeight, true);
+                p.resizeCanvas(window.innerWidth, window.innerHeight, false);
             }
         };
 
