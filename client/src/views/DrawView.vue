@@ -4,6 +4,7 @@ import { sendImage } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
 
 import p5 from "p5";
+import { render } from "vue";
 
 export default defineComponent({
   data() {
@@ -50,8 +51,9 @@ export default defineComponent({
     const sketch = (p: p5) => {
       p.setup = () => {
         const renderer = p.createCanvas(480, 480);
-
+        renderer.class("border border-white");
         this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
+        
 
         this.ctx = this.canvas?.getContext("2d");
       };
@@ -72,7 +74,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class>
+  <div>
     <h1>This is the draw page</h1>
     <button
       class="px-16 py-8 border rounded-xl shadow bg-blue-500 text-white font-bold text-2xl"
@@ -86,7 +88,7 @@ export default defineComponent({
     <label for="blue">Blue</label>
     <br />
     <p>{{ feedback }}</p>
-    <div ref="p5container"></div>
+    <div ref="p5container" class="flex items-center justify-center"></div>
   </div>
 </template>
 
