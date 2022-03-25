@@ -15,7 +15,8 @@ export default defineComponent({
       feedback: "",
       p: null as p5 | null,
       color: 'blue',
-      empty: true
+      empty: true,
+      password: '1234'
     }
   },
   methods: {
@@ -28,7 +29,7 @@ export default defineComponent({
       try {
         const img = this.createImage();
 
-        sendImage(img)
+        sendImage(img, this.password)
           .then(response => {
             console.log(response);
             this.clearCanvas();
@@ -72,7 +73,7 @@ export default defineComponent({
         else {
           p.stroke(246, 255, 0)
         }
-        
+
         p.strokeWeight(10);
 
         if (p.mouseIsPressed === true) {
@@ -91,6 +92,10 @@ export default defineComponent({
 <template>
   <div>
     <h1>This is the draw page</h1>
+    <div class="flex">
+      <label>password:</label>
+      <input type="text" v-model="password" class="bg-black border border-white" />
+    </div>
     <button
       class="px-16 py-8 border rounded-xl shadow bg-blue-500 text-white font-bold text-2xl"
       @click="send"

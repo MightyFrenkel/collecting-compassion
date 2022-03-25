@@ -1,9 +1,9 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { Image } from 'src/models/image';
-import settings from "./aws";
 import { s3Client } from './client';
 import { randomUUID } from 'crypto'
+import { AWS_BUCKET_NAME } from 'src/config';
 
 
 @Injectable()
@@ -13,7 +13,7 @@ export class S3Service {
         const uuid = randomUUID();
         console.log(uuid);
         const params = {
-            Bucket: settings.AWS_BUCKET_NAME,
+            Bucket: AWS_BUCKET_NAME,
             Key: uuid,
             Body: Buffer.from(image.base64.replace(/^data:.+;base64,/, ""), 'base64'),
             ACL: "public-read",
