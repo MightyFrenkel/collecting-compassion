@@ -46,7 +46,7 @@ export default defineComponent({
             return socket;
         },
         animateDrawing(drawing: Drawing, sizePercentage: number = 1) {
-            const moveSpeed = 0.001;
+            const moveSpeed = 0.0003;
             const moveAreaPercentage = 0.1;
             if (!this.p) return;
             if (drawing.distance() < 0.01) {
@@ -105,7 +105,7 @@ export default defineComponent({
                 this.p = p;
                 const renderer = p.createCanvas(480, 480);
                 p.background('black');
-                p.frameRate(10);
+                p.frameRate(24);
                 this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
 
                 this.ctx = this.canvas?.getContext("2d");
