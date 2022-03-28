@@ -28,7 +28,7 @@ export default defineComponent({
     },
     data() {
         return {
-            images: [] as Image[],
+            loadedDrawings: [] as Drawing[],
             socket: null as null | Socket,
             status: "disconnected",
             frameRateFeedback: 0,
@@ -36,7 +36,6 @@ export default defineComponent({
             ctx: null as CanvasRenderingContext2D | null,
             p: null as p5 | null,
             filter: "",
-            currentGridSpot: 0
         }
     },
     methods: {
@@ -62,8 +61,6 @@ export default defineComponent({
             return socket;
         },
         animateDrawing(drawing: Drawing, sizePercentage: number = 1) {
-
-
             if (!this.p) return;
             if (drawing.distance() < 0.01) {
                 drawing.targetPos = {
@@ -84,39 +81,44 @@ export default defineComponent({
         },
         easeOutCirc(x: number): number {
             return Math.sqrt(1 - Math.pow(x - 1, 2));
+        },
+        addDrawing(drawing: Drawing) {
+            if (this.loadedDrawings.length >= this.maxDrawings) {
+                this.loadedDrawings.shift();
+            }
+            this.loadedDrawings.push(drawing);
 
+        },
+        getRandomPos() {
+            if (this.p) {
+                return {
+                    x: this.p.random(0.1, 0.9),
+                    y: this.p.random(0.1, 0.9)
+                } as Vector2
+            }
+            else {
+                console.log("p5 is not ready yet, returning the middle of the canvas");
+                return {
+                    x: 0.5,
+                    y: 0.5
+                }
+            }
         }
     },
     async mounted() {
-
         this.filter = this.$route.params.filter as string;
         this.socket = this.setupSocket();
 
-        this.images = await getAllImages(this.filter);
-        console.log(this.images);
+        const images = await getAllImages(this.filter);
+        console.log(images);
 
-        let loadedDrawings: Drawing[] = [];
-
-        const grid: Vector2[] = [
-            { x: 0.25, y: 0.25, },
-            { x: 0.50, y: 0.25, },
-            { x: 0.75, y: 0.25, },
-            { x: 0.25, y: 0.75, },
-            { x: 0.50, y: 0.75, },
-            { x: 0.75, y: 0.75, }
-        ]
-
+        this.loadedDrawings = [];
         this.socket.on("newimage", (data: Image) => {
-
             if (this.filter.length > 0 && data.color !== this.filter) return;
-            console.log(data);
-            this.images.push(data);
+            console.log("New image added ", data);
             if (this.p && data.base64) {
-                const drawing = this.createDrawing(data.base64, grid[this.currentGridSpot]);
-                this.currentGridSpot++;
-                if (this.currentGridSpot >= grid.length)
-                    this.currentGridSpot = 0;
-                loadedDrawings.push(drawing);
+                const drawing = this.createDrawing(data.base64, this.getRandomPos());
+                this.addDrawing(drawing);
             }
         });
 
@@ -132,32 +134,21 @@ export default defineComponent({
                 this.ctx = this.canvas?.getContext("2d");
                 p.resizeCanvas(window.innerWidth, window.innerHeight, true);
 
-                for (let i = 0; i < 20; i++) {
-                    for (let i = 0; i < this.images.length; i++) {
-                        if (loadedDrawings.length > this.maxDrawings) break;
-                        const randomPos: Vector2 = {
-                            x: p.random(0.1, 0.9),
-                            y: p.random(0.1, 0.9)
-                        }
-                        const drawing = this.createDrawing(this.images[i].url, randomPos);
-                        this.currentGridSpot++;
-                        if (this.currentGridSpot >= grid.length)
-                            this.currentGridSpot = 0;
-                        loadedDrawings.push(drawing);
-                    }
-                }
-                console.log("Loaded " + loadedDrawings.length + " drawings");
+                for (let i = 0; i < images.length; i++) {
+                    if (this.loadedDrawings.length >= this.maxDrawings) break;
 
+                    const drawing = this.createDrawing(images[i].url, this.getRandomPos());
+                    this.addDrawing(drawing);
+                }
+                console.log("Loaded " + this.loadedDrawings.length + " drawings");
             };
 
             p.draw = () => {
                 this.frameRateFeedback = p.frameRate();
-                //p.blendMode('source-over');
                 p.background(0);
-                //p.blendMode('overlay');
-                for (let i = 0; i < loadedDrawings.length; i++) {
-                    const drawing = loadedDrawings[i];
-                    const size = this.easeOutCirc((i / 2) / loadedDrawings.length * 2);
+                for (let i = 0; i < this.loadedDrawings.length; i++) {
+                    const drawing = this.loadedDrawings[i];
+                    const size = this.easeOutCirc(i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
                 }
@@ -176,7 +167,7 @@ export default defineComponent({
 <template>
     <div>
         <div class="fixed">
-            <p>Connection status is '{{ status }}' and fps: {{ frameRateFeedback }}</p>
+            <p>Connection status is '{{ status }}', total drawings {{ loadedDrawings.length }} and fps: {{ frameRateFeedback }}</p>
         </div>
 
         <div ref="p5container"></div>
