@@ -14,13 +14,13 @@ import type { Vector2 } from "@/models/vector2";
 export default defineComponent({
     props: {
         moveSpeed: {
-            default: 0.0001
+            default: 0.000075
         },
         moveAreaPercentage: {
             default: 0.1
         },
         frameRate: {
-            default: 8
+            default: 4
         },
         maxDrawings: {
             default: 200
