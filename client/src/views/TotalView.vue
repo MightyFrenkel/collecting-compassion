@@ -12,11 +12,26 @@ import { Drawing } from "@/models/drawing";
 import type { Vector2 } from "@/models/vector2";
 
 export default defineComponent({
+    props: {
+        moveSpeed: {
+            default: 0.0001
+        },
+        moveAreaPercentage: {
+            default: 0.1
+        },
+        frameRate: {
+            default: 8
+        },
+        maxDrawings: {
+            default: 200
+        }
+    },
     data() {
         return {
             images: [] as Image[],
             socket: null as null | Socket,
             status: "disconnected",
+            frameRateFeedback: 0,
             canvas: null as HTMLCanvasElement | null,
             ctx: null as CanvasRenderingContext2D | null,
             p: null as p5 | null,
@@ -47,13 +62,13 @@ export default defineComponent({
             return socket;
         },
         animateDrawing(drawing: Drawing, sizePercentage: number = 1) {
-            const moveSpeed = 0.0003;
-            const moveAreaPercentage = 0.1;
+
+
             if (!this.p) return;
             if (drawing.distance() < 0.01) {
                 drawing.targetPos = {
-                    x: drawing.startPos.x + this.p.random(-moveAreaPercentage, moveAreaPercentage),
-                    y: drawing.startPos.y + + this.p.random(-moveAreaPercentage, moveAreaPercentage)
+                    x: drawing.startPos.x + this.p.random(-this.moveAreaPercentage, this.moveAreaPercentage),
+                    y: drawing.startPos.y + + this.p.random(-this.moveAreaPercentage, this.moveAreaPercentage)
                 }
             }
             const size = this.p.width / 5 * sizePercentage;
@@ -61,12 +76,16 @@ export default defineComponent({
             const img = drawing.image;
             const normDir = drawing.normDirection();
             drawing.currentPos = {
-                x: drawing.currentPos.x + normDir.x * moveSpeed,
-                y: drawing.currentPos.y + normDir.y * moveSpeed
+                x: drawing.currentPos.x + normDir.x * this.moveSpeed,
+                y: drawing.currentPos.y + normDir.y * this.moveSpeed
             }
             if (img)
                 this.p.image(img, this.p.width * drawing.currentPos.x - offset, this.p.height * drawing.currentPos.y - offset, size, size);
         },
+        easeOutCirc(x: number): number {
+            return Math.sqrt(1 - Math.pow(x - 1, 2));
+
+        }
     },
     async mounted() {
 
@@ -106,7 +125,7 @@ export default defineComponent({
                 this.p = p;
                 const renderer = p.createCanvas(480, 480);
                 p.background('black');
-                p.frameRate(24);
+                p.frameRate(this.frameRate);
 
                 this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
 
@@ -115,7 +134,7 @@ export default defineComponent({
 
                 for (let i = 0; i < 20; i++) {
                     for (let i = 0; i < this.images.length; i++) {
-                        if (loadedDrawings.length > 2000) break;
+                        if (loadedDrawings.length > this.maxDrawings) break;
                         const randomPos: Vector2 = {
                             x: p.random(0.1, 0.9),
                             y: p.random(0.1, 0.9)
@@ -132,14 +151,15 @@ export default defineComponent({
             };
 
             p.draw = () => {
+                this.frameRateFeedback = p.frameRate();
                 //p.blendMode('source-over');
                 p.background(0);
                 //p.blendMode('overlay');
                 for (let i = 0; i < loadedDrawings.length; i++) {
                     const drawing = loadedDrawings[i];
-                    // const size =  (i / 2) / loadedDrawings.length * 2;
+                    const size = this.easeOutCirc((i / 2) / loadedDrawings.length * 2);
 
-                    this.animateDrawing(drawing);
+                    this.animateDrawing(drawing, size);
                 }
             };
             p.windowResized = () => {
@@ -156,8 +176,7 @@ export default defineComponent({
 <template>
     <div>
         <div class="fixed">
-            <h1>This is the total view</h1>
-            <p>Connection status: {{ status }}</p>
+            <p>Connection status is '{{ status }}' and fps: {{ frameRateFeedback }}</p>
         </div>
 
         <div ref="p5container"></div>
