@@ -5,6 +5,7 @@ import type p5 from "p5";
 import { getAllImages } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
 import p5 from "p5";
+
 import { io, Socket } from "socket.io-client";
 import type { Image } from "@/models/image";
 import { Drawing } from "@/models/drawing";
@@ -93,10 +94,10 @@ export default defineComponent({
             this.images.push(data);
             if (this.p && data.base64) {
                 const drawing = this.createDrawing(data.base64, grid[this.currentGridSpot]);
-                    this.currentGridSpot++;
-                    if (this.currentGridSpot >= grid.length)
-                        this.currentGridSpot = 0;
-                    loadedDrawings.push(drawing);
+                this.currentGridSpot++;
+                if (this.currentGridSpot >= grid.length)
+                    this.currentGridSpot = 0;
+                loadedDrawings.push(drawing);
             }
         });
 
@@ -106,31 +107,38 @@ export default defineComponent({
                 const renderer = p.createCanvas(480, 480);
                 p.background('black');
                 p.frameRate(24);
+
                 this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
 
                 this.ctx = this.canvas?.getContext("2d");
                 p.resizeCanvas(window.innerWidth, window.innerHeight, true);
 
-                
-                for (let i = 0; i < this.images.length; i++) {
-                    const randomPos: Vector2 = {
-                        x: p.random(0.1, 0.9),
-                        y: p.random(0.1, 0.9)
+                for (let i = 0; i < 20; i++) {
+                    for (let i = 0; i < this.images.length; i++) {
+                        if (loadedDrawings.length > 2000) break;
+                        const randomPos: Vector2 = {
+                            x: p.random(0.1, 0.9),
+                            y: p.random(0.1, 0.9)
+                        }
+                        const drawing = this.createDrawing(this.images[i].url, randomPos);
+                        this.currentGridSpot++;
+                        if (this.currentGridSpot >= grid.length)
+                            this.currentGridSpot = 0;
+                        loadedDrawings.push(drawing);
                     }
-                    const drawing = this.createDrawing(this.images[i].url, randomPos);
-                    this.currentGridSpot++;
-                    if (this.currentGridSpot >= grid.length)
-                        this.currentGridSpot = 0;
-                    loadedDrawings.push(drawing);
                 }
+                console.log("Loaded " + loadedDrawings.length + " drawings");
+
             };
 
             p.draw = () => {
+                //p.blendMode('source-over');
                 p.background(0);
+                //p.blendMode('overlay');
                 for (let i = 0; i < loadedDrawings.length; i++) {
-                    const drawing = loadedDrawings[i];     
+                    const drawing = loadedDrawings[i];
                     // const size =  (i / 2) / loadedDrawings.length * 2;
-                    
+
                     this.animateDrawing(drawing);
                 }
             };
