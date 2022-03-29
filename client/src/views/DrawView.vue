@@ -5,6 +5,7 @@ import Popup from "@/components/Popup.vue";
 import type { Image } from "@/models/image";
 import { sendImage } from "@/services/modules/ImageService";
 import { defineComponent } from "@vue/runtime-core";
+import type { Vector2 } from "@/models/vector2";
 
 import p5 from "p5";
 
@@ -13,6 +14,11 @@ export default defineComponent({
     ColorPicker,
     ThrashIcon,
     Popup
+  },
+  props: {
+    maxPoints: {
+      default: 10
+    }
   },
   data() {
     return {
@@ -25,7 +31,9 @@ export default defineComponent({
       color: "blue",
       empty: true,
       password: "1234",
-      pwPopupOpen: true
+      pwPopupOpen: true,
+      startingPoints: [] as Vector2[],
+      previousPoints: [] as Vector2[]
     };
   },
   methods: {
@@ -65,10 +73,48 @@ export default defineComponent({
         base64: dataUrl,
         color: this.color
       } as Image;
+    },
+    storePreviousPoint(point: Vector2) {
+      if (this.startingPoints.length < this.maxPoints) {
+        this.startingPoints.push(point);
+      }
+      else {
+        this.previousPoints.push(point);
+        if (this.previousPoints.length > this.maxPoints) {
+          this.previousPoints.shift();
+        }
+      }
+    },
+    drawAllPoints() {
+      if (!this.p) return;
+      for (let i = 1; i < this.startingPoints.length; i++) {
+        const point = this.startingPoints[i];
+        const ppoint = this.startingPoints[i - 1];
+        this.p.strokeWeight(i * 3);
+        this.p.line(point.x, point.y, ppoint.x, ppoint.y);
+      }
+      for (let i = 0; i < this.previousPoints.length; i++) {
+        const point = this.previousPoints[i];
+        if (this.previousPoints.length >= this.maxPoints && i == 0) continue;
+        const ppoint = (i == 0 && this.previousPoints.length < this.maxPoints) ? this.startingPoints[this.startingPoints.length - 1] : this.previousPoints[i - 1];
+
+        this.p.strokeWeight((this.previousPoints.length - i) * 3);
+        this.p.line(point.x, point.y, ppoint.x, ppoint.y); 
+      }
+    },
+    distance(p1: Vector2, p2: Vector2) {
+      return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    },
+    difference(p1: Vector2, p2: Vector2) {
+        return {
+            x: (p1.x - p2.x),
+            y: (p1.y - p2.y)
+        }
     }
   },
   mounted() {
     const sketch = (p: p5) => {
+
       p.setup = () => {
         const renderer = p.createCanvas(480, 480);
         renderer.class("border border-black absolute");
@@ -77,19 +123,22 @@ export default defineComponent({
         p.windowResized();
       };
       p.touchMoved = () => {
-        if (this.color == "blue") {
-          p.stroke(0, 170, 255);
-        }
-        else {
-          p.stroke(246, 255, 0);
-        }
-        p.strokeWeight(10);
+        this.color == "blue" ? p.stroke(0, 170, 255) : p.stroke(246, 255, 0);
+        p.strokeCap('round')
+
         if (p.mouseIsPressed === true) {
-          p.line(p.mouseX, p.mouseY, p.pmouseX, p.pmouseY);
+          this.storePreviousPoint({ x: p.mouseX, y: p.mouseY });
+          this.drawAllPoints();
           this.empty = false;
         }
         return false;
       };
+
+      p.touchEnded = () => {
+        this.previousPoints = [];
+        this.startingPoints = [];
+      }
+
       p.windowResized = () => {
         if (this.canvas?.parentElement)
           p.resizeCanvas(this.canvas?.parentElement?.offsetWidth, this.canvas?.parentElement?.offsetHeight, false);
@@ -108,7 +157,10 @@ export default defineComponent({
         <label>password:</label>
         <input type="password" v-model="password" class="bg-white border border-black h-20" />
       </div>
-      <button class="px-8 py-4 bg-blue-500 rounded-xl text-white text-2xl" @click="pwPopupOpen = false">Set Password</button>
+      <button
+        class="px-8 py-4 bg-blue-500 rounded-xl text-white text-2xl"
+        @click="pwPopupOpen = false"
+      >Set Password</button>
     </Popup>
     <button class="w-full py-8 shadow bg-blue-500 text-white font-bold text-2xl" @click="send">Send</button>
     <p>{{ feedback }}</p>

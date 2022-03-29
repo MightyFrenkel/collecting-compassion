@@ -10,20 +10,21 @@ import { io, Socket } from "socket.io-client";
 import type { Image } from "@/models/image";
 import { Drawing } from "@/models/drawing";
 import type { Vector2 } from "@/models/vector2";
+import { easeOutCirc } from "@/helpers/Easing";
 
 export default defineComponent({
     props: {
         moveSpeed: {
-            default: 0.000075
+            default: 0.000225
         },
         moveAreaPercentage: {
             default: 0.1
         },
         frameRate: {
-            default: 4
+            default: 6
         },
         maxDrawings: {
-            default: 200
+            default: 150
         }
     },
     data() {
@@ -78,9 +79,6 @@ export default defineComponent({
             }
             if (img)
                 this.p.image(img, this.p.width * drawing.currentPos.x - offset, this.p.height * drawing.currentPos.y - offset, size, size);
-        },
-        easeOutCirc(x: number): number {
-            return Math.sqrt(1 - Math.pow(x - 1, 2));
         },
         addDrawing(drawing: Drawing) {
             if (this.loadedDrawings.length >= this.maxDrawings) {
@@ -148,7 +146,7 @@ export default defineComponent({
                 p.background(0);
                 for (let i = 0; i < this.loadedDrawings.length; i++) {
                     const drawing = this.loadedDrawings[i];
-                    const size = this.easeOutCirc(i / this.loadedDrawings.length);
+                    const size = easeOutCirc(i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
                 }
