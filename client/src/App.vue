@@ -10,7 +10,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <RouterView class="bg-black text-white min-h-screen overscroll-none" />
+  <RouterView class="bg-black text-white h-screen overscroll-none" />
 </template>
 
 <style>
