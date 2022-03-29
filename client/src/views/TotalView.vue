@@ -37,6 +37,7 @@ export default defineComponent({
             ctx: null as CanvasRenderingContext2D | null,
             p: null as p5 | null,
             filter: "",
+            overlays: [] as any[]
         }
     },
     methods: {
@@ -69,16 +70,18 @@ export default defineComponent({
                     y: drawing.startPos.y + + this.p.random(-this.moveAreaPercentage, this.moveAreaPercentage)
                 }
             }
-            const size = this.p.width / 5 * sizePercentage;
-            const offset = size / 2;
             const img = drawing.image;
+            if (!img) return;
+            const width = img.width / 1.5 * sizePercentage;
+            const height = img.height / 1.5 * sizePercentage;
+            
             const normDir = drawing.normDirection();
             drawing.currentPos = {
                 x: drawing.currentPos.x + normDir.x * this.moveSpeed,
                 y: drawing.currentPos.y + normDir.y * this.moveSpeed
             }
-            if (img)
-                this.p.image(img, this.p.width * drawing.currentPos.x - offset, this.p.height * drawing.currentPos.y - offset, size, size);
+            
+                this.p.image(img, this.p.width * drawing.currentPos.x - width / 2, this.p.height * drawing.currentPos.y - height / 2, width, height);
         },
         addDrawing(drawing: Drawing) {
             if (this.loadedDrawings.length >= this.maxDrawings) {
@@ -108,6 +111,7 @@ export default defineComponent({
         this.socket = this.setupSocket();
 
         const images = await getAllImages(this.filter);
+        
         console.log(images);
 
         this.loadedDrawings = [];
@@ -124,6 +128,10 @@ export default defineComponent({
             p.setup = () => {
                 this.p = p;
                 const renderer = p.createCanvas(480, 480);
+
+                for (let i = 1; i < 5; i++) {
+                    this.overlays.push(p.loadImage("/img/DrawOverlay1_" + i + ".png"));
+                }
                 p.background('black');
                 p.frameRate(this.frameRate);
 
@@ -144,12 +152,17 @@ export default defineComponent({
             p.draw = () => {
                 this.frameRateFeedback = p.frameRate();
                 p.background(0);
+
                 for (let i = 0; i < this.loadedDrawings.length; i++) {
                     const drawing = this.loadedDrawings[i];
                     const size = easeOutCirc(i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
                 }
+                const n = Math.round(p.random(0, 3));
+                
+                p.image(this.overlays[n], 0, 0, p.width, p.height);
+                
             };
             p.windowResized = () => {
                 p.resizeCanvas(window.innerWidth, window.innerHeight, false);
