@@ -102,39 +102,22 @@ export default defineComponent({
         this.p.line(point.x, point.y, ppoint.x, ppoint.y);
       }
     },
-    applyMask() {
-      const img = this.createImage();
-      if (!this.p || !img.base64) return;
+    applyMask(r: number, g: number, b: number) {
+      if (!this.p) return;
       const p = this.p;
-      this.p.loadImage(img.base64, (mask) => {
-        // console.log(mask);
-        // const overlay = p.createImage(p.width, p.height);
-        // overlay.loadPixels();
-        // for (let x = 0; x < overlay.width; x++) {
-        //   for (let y = 0; y < overlay.height; y++) {
-        //     let a = p.map(y, 0, overlay.height, 255, 0);
-        //     overlay.set(x, y, [246, 255, 0, a]);
-        //   }
-        // }
-        // overlay.updatePixels();
-        // overlay.mask(mask);
-        // mask.loadPixels();
-        mask.loadPixels();
-        for (let x = 0; x < mask.width; x++) {
-          for (let y = 0; y < mask.height; y++) {
-            let a = p.map(y, 0, mask.height, 255, 0);
-            
-            console.log(mask.get(x, y));
+      const mask = p.get(0, 0, p.width, p.height);
+      mask.loadPixels();
+      for (let x = 0; x < mask.width; x++) {
+        for (let y = 0; y < mask.height; y++) {
+          let a = p.map(y, 0, mask.height, 255, 0);
+          if (mask.get(x, y)[3] > 0) {
+
+            mask.set(x, y, p.color(r, g, b));
           }
         }
-        p.updatePixels();
-        p.image(mask, 0, 0);
-
-
-        // p.image(overlay, 0, 0);
-
-      });
-
+      }
+      mask.updatePixels();
+      p.image(mask, 0, 0);
     },
     distance(p1: Vector2, p2: Vector2) {
       return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
@@ -147,6 +130,7 @@ export default defineComponent({
     }
   },
   mounted() {
+
     const sketch = (p: p5) => {
 
       p.setup = () => {
@@ -155,6 +139,7 @@ export default defineComponent({
         this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
         this.ctx = this.canvas?.getContext("2d");
         p.windowResized();
+
       };
       p.touchMoved = () => {
         this.color == "blue" ? p.stroke(0, 170, 255) : p.stroke(246, 255, 0);
@@ -164,15 +149,13 @@ export default defineComponent({
           this.drawAllPoints();
           this.empty = false;
         }
-        p.strokeWeight(0);
-        
+
         return false;
       };
 
       p.touchEnded = () => {
         this.previousPoints = [];
         this.startingPoints = [];
-        // this.applyMask();
       }
 
       p.windowResized = () => {
@@ -206,7 +189,7 @@ export default defineComponent({
         :active="color == 'blue'"
         color="rgb(1, 92, 188)"
         class="w-1/6"
-        @click="color = 'blue'"
+        @click="color = 'blue'; applyMask(0, 170, 255)"
       />
       <div ref="p5container" class="relative w-4/6 mx-auto">
         <div class="absolute flex justify-center w-full m-4">
@@ -220,7 +203,7 @@ export default defineComponent({
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
         class="w-1/6"
-        @click="color = 'yellow'"
+        @click="color = 'yellow'; applyMask(246, 255, 0)"
       />
     </div>
   </div>
