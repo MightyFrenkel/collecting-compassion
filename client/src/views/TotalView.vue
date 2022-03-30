@@ -155,7 +155,8 @@ export default defineComponent({
 
                 for (let i = 0; i < this.loadedDrawings.length; i++) {
                     const drawing = this.loadedDrawings[i];
-                    const size = easeOutCirc((this.loadedDrawings.length - i) / this.loadedDrawings.length);
+                    const size = easeOutCirc(i / this.loadedDrawings.length);
+                    console.log("i: " + i + " size: " + size + " input: " + i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
                 }
