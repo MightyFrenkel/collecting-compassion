@@ -99,17 +99,51 @@ export default defineComponent({
         const ppoint = (i == 0 && this.previousPoints.length < this.maxPoints) ? this.startingPoints[this.startingPoints.length - 1] : this.previousPoints[i - 1];
 
         this.p.strokeWeight((this.previousPoints.length - i) * 3);
-        this.p.line(point.x, point.y, ppoint.x, ppoint.y); 
+        this.p.line(point.x, point.y, ppoint.x, ppoint.y);
       }
+    },
+    applyMask() {
+      const img = this.createImage();
+      if (!this.p || !img.base64) return;
+      const p = this.p;
+      this.p.loadImage(img.base64, (mask) => {
+        // console.log(mask);
+        // const overlay = p.createImage(p.width, p.height);
+        // overlay.loadPixels();
+        // for (let x = 0; x < overlay.width; x++) {
+        //   for (let y = 0; y < overlay.height; y++) {
+        //     let a = p.map(y, 0, overlay.height, 255, 0);
+        //     overlay.set(x, y, [246, 255, 0, a]);
+        //   }
+        // }
+        // overlay.updatePixels();
+        // overlay.mask(mask);
+        // mask.loadPixels();
+        mask.loadPixels();
+        for (let x = 0; x < mask.width; x++) {
+          for (let y = 0; y < mask.height; y++) {
+            let a = p.map(y, 0, mask.height, 255, 0);
+            
+            console.log(mask.get(x, y));
+          }
+        }
+        p.updatePixels();
+        p.image(mask, 0, 0);
+
+
+        // p.image(overlay, 0, 0);
+
+      });
+
     },
     distance(p1: Vector2, p2: Vector2) {
       return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
     },
     difference(p1: Vector2, p2: Vector2) {
-        return {
-            x: (p1.x - p2.x),
-            y: (p1.y - p2.y)
-        }
+      return {
+        x: (p1.x - p2.x),
+        y: (p1.y - p2.y)
+      }
     }
   },
   mounted() {
@@ -125,18 +159,20 @@ export default defineComponent({
       p.touchMoved = () => {
         this.color == "blue" ? p.stroke(0, 170, 255) : p.stroke(246, 255, 0);
         p.strokeCap('round')
-
         if (p.mouseIsPressed === true) {
           this.storePreviousPoint({ x: p.mouseX, y: p.mouseY });
           this.drawAllPoints();
           this.empty = false;
         }
+        p.strokeWeight(0);
+        
         return false;
       };
 
       p.touchEnded = () => {
         this.previousPoints = [];
         this.startingPoints = [];
+        // this.applyMask();
       }
 
       p.windowResized = () => {
@@ -162,7 +198,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button class="w-full py-8 shadow bg-blue-500 text-white font-bold text-2xl" @click="send">Send</button>
+    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @click="send">Send</button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
@@ -180,6 +216,7 @@ export default defineComponent({
         </div>
       </div>
       <ColorPicker
+        :flip="true"
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
         class="w-1/6"

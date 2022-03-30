@@ -163,7 +163,7 @@ export default defineComponent({
                     const drawing = this.loadedDrawings[i];
                     const minSize = 0.1;
                     const size = easeOutCirc((i + minSize) / this.loadedDrawings.length);
-                    console.log("i: " + i + " size: " + size + " input: " + i / this.loadedDrawings.length);
+                    //console.log("i: " + i + " size: " + size + " input: " + i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
                 }
