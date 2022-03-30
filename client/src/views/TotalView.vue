@@ -72,8 +72,13 @@ export default defineComponent({
             }
             const img = drawing.image;
             if (!img) return;
-            const width = img.width / 1.5 * sizePercentage;
-            const height = img.height / 1.5 * sizePercentage;
+
+            const maxImgWidth = this.p.width / 5;
+            const maxImgHeight = img.height / img.width * maxImgWidth;
+            
+            
+            const width = maxImgWidth * sizePercentage;
+            const height = maxImgHeight * sizePercentage;
             
             const normDir = drawing.normDirection();
             drawing.currentPos = {
@@ -81,7 +86,8 @@ export default defineComponent({
                 y: drawing.currentPos.y + normDir.y * this.moveSpeed
             }
             
-                this.p.image(img, this.p.width * drawing.currentPos.x - width / 2, this.p.height * drawing.currentPos.y - height / 2, width, height);
+                this.p.image(img, this.p.width * drawing.currentPos.x - width / 2, this.p.height * drawing.currentPos.y - height / 2,
+                 width, height);
         },
         addDrawing(drawing: Drawing) {
             if (this.loadedDrawings.length >= this.maxDrawings) {
@@ -155,7 +161,8 @@ export default defineComponent({
 
                 for (let i = 0; i < this.loadedDrawings.length; i++) {
                     const drawing = this.loadedDrawings[i];
-                    const size = easeOutCirc(i / this.loadedDrawings.length);
+                    const minSize = 0.1;
+                    const size = easeOutCirc((i + minSize) / this.loadedDrawings.length);
                     console.log("i: " + i + " size: " + size + " input: " + i / this.loadedDrawings.length);
 
                     this.animateDrawing(drawing, size);
