@@ -205,6 +205,10 @@ export default defineComponent({
             <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
           </div>
         </div>
+        
+        <div class="absolute inset-x-0 inset-y-0 flex justify-center items-center">
+        <img class="h-4/5 opacity-100 animate-pulse" src="/img/heartTemplate.svg" />  
+        </div>
         <div v-if="empty" class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse">
           <p> Open to draw</p>
         </div>

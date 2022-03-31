@@ -29,6 +29,7 @@ export default defineComponent({
             this.extraClass = "opacity-100";
             setTimeout(() => {
                 this.extraClass = "opacity-0";
+                this.latestImg = null;
             }, 5000)
         });
     }
@@ -36,7 +37,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="bg-black flex items-center justify-center max-h-screen">
-      <img v-if="latestImg" :class="'transition-opacity duration-1000 ' + extraClass"  :src="latestImg.url" />
+  <div class="bg-black flex flex-col items-center justify-center max-h-screen text-7xl font-light">
+      <p class="pt-10"> Draw a <label class="font-bold">Heart</label> </p>
+      <img v-if="latestImg" :class="'transition-opacity h-full duration-1000 ' + extraClass"  :src="latestImg.url" />
+      <img v-else class="w-full h-full p-48" src="/img/heartTemplate.svg" />
+      <p class="pb-10"> To support your <label class="font-bold"> Peers</label> </p>
   </div>
 </template>
