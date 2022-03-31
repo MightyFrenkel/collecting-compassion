@@ -18,6 +18,9 @@ export default defineComponent({
   props: {
     maxPoints: {
       default: 10
+    },
+    debug: {
+      default: false
     }
   },
   data() {
@@ -50,7 +53,8 @@ export default defineComponent({
           .then(response => {
             console.log(response);
             this.clearCanvas();
-            this.feedback = "succesfully send!";
+            if (this.debug)
+              this.feedback = "succesfully send!";
           })
           .catch(error => {
             console.log(error);
@@ -65,7 +69,10 @@ export default defineComponent({
       console.log(this.empty);
       if (this.empty) {
         const errorMsg = "Drawing is empty, can not send";
-        this.feedback = errorMsg;
+        if (this.debug) {
+          
+          this.feedback = errorMsg;
+        }
         throw Error(errorMsg);
       }
       const dataUrl = this.canvas?.toDataURL("image/png");
@@ -135,7 +142,7 @@ export default defineComponent({
 
       p.setup = () => {
         const renderer = p.createCanvas(480, 480);
-        renderer.class("border border-black absolute");
+        renderer.class("shadow absolute");
         this.canvas = document.getElementById(renderer.id()) as HTMLCanvasElement;
         this.ctx = this.canvas?.getContext("2d");
         p.windowResized();
@@ -189,7 +196,7 @@ export default defineComponent({
         :active="color == 'blue'"
         color="rgb(1, 92, 188)"
         class="w-1/6"
-        @click="color = 'blue'; applyMask(0, 170, 255)"
+        @click="color = 'blue'; clearCanvas()"
       />
       <div ref="p5container" class="relative w-4/6 mx-auto">
         <div class="absolute flex justify-center w-full m-4">
@@ -203,7 +210,7 @@ export default defineComponent({
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
         class="w-1/6"
-        @click="color = 'yellow'; applyMask(246, 255, 0)"
+        @click="color = 'yellow'; clearCanvas()"
       />
     </div>
   </div>

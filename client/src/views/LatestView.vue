@@ -7,7 +7,8 @@ export default defineComponent({
         return {
             socket: null as null | Socket,
             status: "",
-            latestImg: null as any
+            latestImg: null as any,
+            extraClass: 'opacity-100'
         }
     },
     mounted() {
@@ -25,14 +26,17 @@ export default defineComponent({
         this.socket.on("newimage", (data: any) => {
             console.log(data);
             this.latestImg = data;
+            this.extraClass = "opacity-100";
+            setTimeout(() => {
+                this.extraClass = "opacity-0";
+            }, 5000)
         });
     }
 })
 </script>
 
 <template>
-<h1> The latest image is the following: </h1>
-  <div>
-      <img v-if="latestImg" :src="latestImg.url" />
+  <div class="bg-black flex items-center justify-center max-h-screen">
+      <img v-if="latestImg" :class="'transition-opacity duration-1000 ' + extraClass"  :src="latestImg.url" />
   </div>
 </template>
