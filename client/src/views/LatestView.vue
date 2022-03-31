@@ -37,10 +37,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="bg-black flex flex-col items-center justify-center max-h-screen text-7xl font-light">
-      <p class="pt-10 h-1/6"> Draw a <label class="font-bold">Heart</label> </p>
+  <div class="bg-black flex flex-col items-center justify-center max-h-screen text-7xl font-light relative">
+      <p class="pt-10 absolute top-0"> Draw a <label class="font-bold">Heart</label> </p>
       <img v-if="latestImg" :class="'transition-opacity h-full duration-1000 ' + extraClass"  :src="latestImg.url" />
-      <img v-else class="w-full h-full p-48" src="/img/heartTemplate.svg" />
-      <p class="pb-10 h-1/6"> To support your <label class="font-bold"> Peers</label> </p>
+      <img v-else class="h-48 animate-pulse" src="/img/heartTemplate.svg" />
+      <p class="pb-10 absolute bottom-0"> To support your <label class="font-bold"> Peers</label> </p>
   </div>
 </template>
