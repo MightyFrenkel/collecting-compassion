@@ -44,6 +44,6 @@ export default defineComponent({
       <p class="pt-10 absolute top-0"> Draw a <label class="font-bold">Heart</label> </p>
       <img v-if="latestImg" :class="'transition-opacity h-full duration-1000 ' + extraClass"  :src="latestImg.url" />
       <img v-else class="h-48 animate-pulse" src="/img/heartTemplate.svg" />
-      <p class="pb-10 absolute bottom-0"> To support your <label class="font-bold"> Peers</label> </p>
+      <p class="pb-10 absolute bottom-0"> To <label class="font-bold"> Support </label> your Peers </p>
   </div>
 </template>

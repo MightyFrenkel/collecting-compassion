@@ -21,7 +21,21 @@ export default defineComponent({
     },
     debug: {
       default: false
-    }
+    },
+    blue: {
+      default: {
+        r: 0,
+        g: 170,
+        b: 255
+      }
+    },
+    yellow: {
+      default: {
+        r: 246,
+        g: 255,
+        b: 0
+      }
+    },
   },
   data() {
     return {
@@ -56,6 +70,9 @@ export default defineComponent({
             this.clearCanvas();
             if (this.debug)
               this.feedback = "succesfully send!";
+            // Switch the color after sending
+            this.color = this.color == 'blue' ? 'yellow' : 'blue';
+
           })
           .catch(error => {
             console.log(error);
@@ -71,7 +88,7 @@ export default defineComponent({
       if (this.empty) {
         const errorMsg = "Drawing is empty, can not send";
         if (this.debug) {
-          
+
           this.feedback = errorMsg;
         }
         throw Error(errorMsg);
@@ -150,7 +167,7 @@ export default defineComponent({
 
       };
       p.touchMoved = () => {
-        this.color == "blue" ? p.stroke(0, 170, 255) : p.stroke(246, 255, 0);
+        this.color == "blue" ? p.stroke(this.blue.r, this.blue.g, this.blue.b) : p.stroke(this.yellow.r, this.yellow.g, this.yellow.b);
         p.strokeCap('round')
         if (p.mouseIsPressed === true) {
           this.storePreviousPoint({ x: p.mouseX, y: p.mouseY });
@@ -189,7 +206,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @click="send">Send</button>
+    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @focus="send()">Send</button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
@@ -205,12 +222,15 @@ export default defineComponent({
             <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
           </div>
         </div>
-        
+
         <div class="absolute inset-x-0 inset-y-0 flex justify-center items-center">
-        <img class="h-4/5 opacity-100 animate-pulse" src="/img/heartTemplate.svg" />  
+          <img class="h-4/5 opacity-100 animate-pulse" src="/img/heartTemplate.svg" />
         </div>
-        <div v-if="empty" class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse">
-          <p> Open to draw</p>
+        <div
+          class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse"
+        >
+          <p v-if="empty">Open to draw</p>
+          <p v-else> Close to send </p>
         </div>
       </div>
       <ColorPicker
