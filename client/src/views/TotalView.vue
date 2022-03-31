@@ -25,6 +25,9 @@ export default defineComponent({
         },
         maxDrawings: {
             default: 150
+        }, 
+        debug: {
+            default: false
         }
     },
     data() {
@@ -185,7 +188,7 @@ export default defineComponent({
 
 <template>
     <div>
-        <div class="fixed">
+        <div v-if="debug" class="fixed">
             <p>Connection status is '{{ status }}', total drawings {{ loadedDrawings.length }} and fps: {{ frameRateFeedback }}</p>
         </div>
 

@@ -8,7 +8,8 @@ export default defineComponent({
             socket: null as null | Socket,
             status: "",
             latestImg: null as any,
-            extraClass: 'opacity-100'
+            extraClass: 'opacity-100',
+            timeOut: null as null | number
         }
     },
     mounted() {
@@ -27,10 +28,12 @@ export default defineComponent({
             console.log(data);
             this.latestImg = data;
             this.extraClass = "opacity-100";
-            setTimeout(() => {
+            if (this.timeOut)
+                clearTimeout(this.timeOut);
+            this.timeOut = setTimeout(() => {
                 this.extraClass = "opacity-0";
                 this.latestImg = null;
-            }, 5000)
+            }, 20000)
         });
     }
 })
