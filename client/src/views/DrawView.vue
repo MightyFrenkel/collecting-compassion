@@ -210,7 +210,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;">Send</button>
+    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;">Send</button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
