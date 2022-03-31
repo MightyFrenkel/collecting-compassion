@@ -195,7 +195,7 @@ export default defineComponent({
       <ColorPicker
         :active="color == 'blue'"
         color="rgb(1, 92, 188)"
-        class="w-1/6"
+        :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
         @click="color = 'blue'; clearCanvas()"
       />
       <div ref="p5container" class="relative w-4/6 mx-auto">
@@ -204,12 +204,15 @@ export default defineComponent({
             <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
           </div>
         </div>
+        <div v-if="empty" class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse">
+          <p> Open to draw</p>
+        </div>
       </div>
       <ColorPicker
         :flip="true"
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
-        class="w-1/6"
+        :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
         @click="color = 'yellow'; clearCanvas()"
       />
     </div>
