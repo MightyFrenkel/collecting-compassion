@@ -50,7 +50,8 @@ export default defineComponent({
       password: "1234",
       pwPopupOpen: true,
       startingPoints: [] as Vector2[],
-      previousPoints: [] as Vector2[]
+      previousPoints: [] as Vector2[],
+      pressingSend: false
     };
   },
   methods: {
@@ -61,6 +62,7 @@ export default defineComponent({
       this.feedback = "";
     },
     send() {
+      
       this.feedback = "";
       try {
         const img = this.createImage();
@@ -72,6 +74,7 @@ export default defineComponent({
               this.feedback = "succesfully send!";
             // Switch the color after sending
             this.color = this.color == 'blue' ? 'yellow' : 'blue';
+            this.empty = true;
 
           })
           .catch(error => {
@@ -88,7 +91,6 @@ export default defineComponent({
       if (this.empty) {
         const errorMsg = "Drawing is empty, can not send";
         if (this.debug) {
-
           this.feedback = errorMsg;
         }
         throw Error(errorMsg);
@@ -169,7 +171,9 @@ export default defineComponent({
       p.touchMoved = () => {
         this.color == "blue" ? p.stroke(this.blue.r, this.blue.g, this.blue.b) : p.stroke(this.yellow.r, this.yellow.g, this.yellow.b);
         p.strokeCap('round')
-        if (p.mouseIsPressed === true) {
+        if (p.mouseIsPressed === true 
+        && p.mouseX > 0 && p.mouseX < p.width
+        && p.mouseY > 0 && p.mouseY < p.height) {
           this.storePreviousPoint({ x: p.mouseX, y: p.mouseY });
           this.drawAllPoints();
           this.empty = false;
@@ -206,7 +210,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @focus="send()">Send</button>
+    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;">Send</button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
@@ -214,11 +218,11 @@ export default defineComponent({
         :active="color == 'blue'"
         color="rgb(1, 92, 188)"
         :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
-        @click="color = 'blue'; clearCanvas(false)"
+        @click="color = 'blue'; clearCanvas()"
       />
       <div ref="p5container" class="relative w-4/6 mx-auto">
         <div class="absolute flex justify-center w-full my-4">
-          <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas(false)">
+          <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas()">
             <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
           </div>
         </div>
@@ -229,7 +233,7 @@ export default defineComponent({
         <div
           class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse"
         >
-          <p v-if="empty">Open to draw</p>
+          <p v-if="pressingSend">Open to draw</p>
           <p v-else> Close to send </p>
         </div>
       </div>
@@ -238,7 +242,7 @@ export default defineComponent({
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
         :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
-        @click="color = 'yellow'; clearCanvas(false)"
+        @click="color = 'yellow'; clearCanvas()"
       />
     </div>
   </div>
