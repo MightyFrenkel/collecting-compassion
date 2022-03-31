@@ -40,9 +40,10 @@ export default defineComponent({
     };
   },
   methods: {
-    clearCanvas() {
+    clearCanvas(setEmpty: boolean = true) {
       this.p?.clear(0, 0, 0, 0);
-      this.empty = true;
+      if (setEmpty)
+        this.empty = true;
       this.feedback = "";
     },
     send() {
@@ -196,11 +197,11 @@ export default defineComponent({
         :active="color == 'blue'"
         color="rgb(1, 92, 188)"
         :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
-        @click="color = 'blue'; clearCanvas()"
+        @click="color = 'blue'; clearCanvas(false)"
       />
       <div ref="p5container" class="relative w-4/6 mx-auto">
-        <div class="absolute flex justify-center w-full m-4">
-          <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas">
+        <div class="absolute flex justify-center w-full my-4">
+          <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas(false)">
             <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
           </div>
         </div>
@@ -213,7 +214,7 @@ export default defineComponent({
         :active="color == 'yellow'"
         color="rgb(255, 213, 4)"
         :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
-        @click="color = 'yellow'; clearCanvas()"
+        @click="color = 'yellow'; clearCanvas(false)"
       />
     </div>
   </div>
