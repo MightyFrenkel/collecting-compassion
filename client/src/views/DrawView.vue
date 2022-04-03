@@ -47,7 +47,7 @@ export default defineComponent({
       p: null as p5 | null,
       color: "blue",
       empty: true,
-      password: "1234",
+      password: "",
       pwPopupOpen: true,
       startingPoints: [] as Vector2[],
       previousPoints: [] as Vector2[],
@@ -210,7 +210,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button class="w-full py-4 shadow bg-blue-500 text-white font-bold text-2xl" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;">Send</button>
+    <button :class="'w-full py-4 shadow font-bold text-2xl ' + (pressingSend ? 'bg-blue-100' : '')" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;"></button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
