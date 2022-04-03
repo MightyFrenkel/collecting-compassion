@@ -51,7 +51,8 @@ export default defineComponent({
       pwPopupOpen: true,
       startingPoints: [] as Vector2[],
       previousPoints: [] as Vector2[],
-      pressingSend: false
+      pressingSend: false,
+      sendingInProgress: false
     };
   },
   methods: {
@@ -62,12 +63,17 @@ export default defineComponent({
       this.feedback = "";
     },
     send() {
-      
+      if (this.sendingInProgress) {
+        console.log("Alreading sending an image");
+        return;
+      }
       this.feedback = "";
+      this.sendingInProgress = true;
       try {
         const img = this.createImage();
         sendImage(img, this.password)
           .then(response => {
+            this.sendingInProgress = false;
             console.log(response);
             this.clearCanvas();
             if (this.debug)
@@ -78,16 +84,17 @@ export default defineComponent({
 
           })
           .catch(error => {
+            this.sendingInProgress = false;
             console.log(error);
             this.feedback = error;
           });
       }
       catch (error) {
+        this.sendingInProgress = false;
         console.log(error);
       }
     },
     createImage(): Image {
-      console.log(this.empty);
       if (this.empty) {
         const errorMsg = "Drawing is empty, can not send";
         if (this.debug) {
@@ -157,7 +164,7 @@ export default defineComponent({
     }
   },
   mounted() {
-
+    this.sendingInProgress = false;
     const sketch = (p: p5) => {
 
       p.setup = () => {
@@ -210,7 +217,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button :class="'w-full py-4 shadow font-bold text-2xl ' + (pressingSend ? 'bg-blue-100' : '')" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @mousedown="send(); pressingSend = true;" @mouseup="pressingSend = false;"></button>
+    <button :class="'w-full py-4 shadow font-bold text-2xl ' + (pressingSend ? 'bg-blue-100' : '')" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @click="send(); pressingSend = true;" @mouseup="pressingSend = false;"></button>
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
