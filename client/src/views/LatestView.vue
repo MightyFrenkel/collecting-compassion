@@ -41,9 +41,26 @@ export default defineComponent({
 
 <template>
   <div class="bg-black flex flex-col items-center justify-center max-h-screen text-7xl font-light relative">
-      <p class="pt-10 absolute top-0"> Draw a <label class="font-bold">Heart</label> </p>
       <img v-if="latestImg" :class="'transition-opacity h-full duration-1000 ' + extraClass"  :src="latestImg.url" />
-      <img v-else class="h-48 animate-pulse" src="/img/heartTemplate.svg" />
-      <p class="pb-10 absolute bottom-0"> To <label class="font-bold"> Support </label> your Peers </p>
+      <img v-else class="h-3/5 animate-pulse move" src="/img/TV-screen.png" />
   </div>
 </template>
+<style>
+.move {
+    animation-name: grow;
+    animation-duration: 400s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes grow {
+    0% {
+        transform:scale(1.2);
+    }
+    50% {
+        transform:scale(1.5);    
+    }
+    100% {
+        transform:scale(1.2);
+    }
+}
+</style>

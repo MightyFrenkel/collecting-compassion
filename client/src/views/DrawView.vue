@@ -51,7 +51,6 @@ export default defineComponent({
       pwPopupOpen: true,
       startingPoints: [] as Vector2[],
       previousPoints: [] as Vector2[],
-      pressingSend: false,
       sendingInProgress: false
     };
   },
@@ -178,9 +177,9 @@ export default defineComponent({
       p.touchMoved = () => {
         this.color == "blue" ? p.stroke(this.blue.r, this.blue.g, this.blue.b) : p.stroke(this.yellow.r, this.yellow.g, this.yellow.b);
         p.strokeCap('round')
-        if (p.mouseIsPressed === true 
-        && p.mouseX > 0 && p.mouseX < p.width
-        && p.mouseY > 0 && p.mouseY < p.height) {
+        if (p.mouseIsPressed === true
+          && p.mouseX > 0 && p.mouseX < p.width
+          && p.mouseY > 0 && p.mouseY < p.height) {
           this.storePreviousPoint({ x: p.mouseX, y: p.mouseY });
           this.drawAllPoints();
           this.empty = false;
@@ -217,7 +216,7 @@ export default defineComponent({
         @click="pwPopupOpen = false"
       >Set Password</button>
     </Popup>
-    <button :class="'w-full py-4 shadow font-bold text-2xl ' + (pressingSend ? 'bg-blue-100' : '')" @touchstart="send(); pressingSend = true;" @touchend="pressingSend = false" @click="send(); pressingSend = true;" @mouseup="pressingSend = false;"></button>
+
     <p>{{ feedback }}</p>
 
     <div class="flex h-full">
@@ -227,22 +226,26 @@ export default defineComponent({
         :class="'w-1/6 ' + (empty ? 'animate-pulse' : '')"
         @click="color = 'blue'; clearCanvas()"
       />
-      <div ref="p5container" class="relative w-4/6 mx-auto">
-        <div class="absolute flex justify-center w-full my-4">
-          <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas()">
-            <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
+      <div class="relative w-4/6 mx-auto flex flex-col">
+        <div ref="p5container" class="w-full h-full relative">
+          <div class="absolute flex justify-center w-full my-4">
+            <div class="bg-gray-400 rounded-full cursor-pointer z-10" @click="clearCanvas()">
+              <ThrashIcon class="w-24 h-24 p-6 text-gray-100" />
+            </div>
           </div>
-        </div>
 
-        <div class="absolute inset-x-0 inset-y-0 flex justify-center items-center">
-          <img class="h-4/5 opacity-100 animate-pulse" src="/img/heartTemplate.svg" />
+          <div class="absolute inset-x-0 inset-y-0 flex justify-center items-center w-full h-full pt-12">
+            <img v-if="empty" class="w-full h-4/5 opacity-100 animate-pulse" src="/img/heartTemplate.svg" />
+          </div>
+          <div
+            class="absolute z-20 bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic"
+          ></div>
         </div>
-        <div
-          class="absolute bottom-6 inset-x-0 flex justify-center text-4xl font-bold italic animate-pulse"
-        >
-          <p v-if="pressingSend">Open to draw</p>
-          <p v-else> Close to send </p>
-        </div>
+        <button
+          :class="'w-1/2 mx-auto my-4 rounded-lg h-24 shadow font-bold text-4xl text-white'"
+          :style="(color == 'blue' ? ' background-color: rgb(1, 92, 188)' : 'background-color: rgb(255, 213, 4)')"
+          @click="send()"
+        >Send</button>
       </div>
       <ColorPicker
         :flip="true"
